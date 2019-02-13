@@ -1,9 +1,9 @@
 const fs = require('graceful-fs')
 const request = require('request')
 import { bindNodeCallback, from } from 'rxjs'
-import { map, pluck, tap, mergeMap, filter, scan, finalize, mergeAll, startWith, first, withLatestFrom } from 'rxjs/operators'
+import { map, pluck, tap, mergeMap, filter, scan, finalize, mergeAll, } from 'rxjs/operators'
 import { sudPath, getRangeHeaders, createRequest } from './util'
-import { partialPath, getLocalFilesize } from '../dist/util';
+import { partialPath, getLocalFilesize } from '../dist/util'
 
 //the observable created from the requestHead function will emit the array [response, ''] if no error is caught
 //because the parameters for the request callback are (err, response, body) and body is empty
@@ -40,6 +40,7 @@ export function getMetadata(url, savePath, threads, filesize$) {
 			}
 			return meta
 		}),
+		//write data to .sud meta file side effect
 		tap(meta => {
 			fs.writeFile(meta.sudPath, JSON.stringify(meta))
 		})
@@ -49,7 +50,8 @@ export function getMetadata(url, savePath, threads, filesize$) {
 export function makeRequests(meta$, optionalHeaders) {
 	return meta$.pipe(
 		//calculate ranges based on existing .PARTIAL files
-		//and transform the meta object into an array of request observables
+		//and transform the meta object into an object holding an array of request observables
+		//and the meta data object
 		map(meta => {
 			var { url, savePath, ranges } = meta
 			var rangeHeaders = getRangeHeaders(savePath, ranges)
@@ -58,8 +60,13 @@ export function makeRequests(meta$, optionalHeaders) {
 				request$s[index] = createRequest(url, Object.assign(optionalHeaders || {}, { range: rangeHeader }))
 			})
 			return { request$s, meta }
-		}),
-		//write to buffer side effect within merge to single non higher-order positions observable
+		})
+	)
+}
+
+export function getThreadPositions(requestsAndMeta$) {
+	//write to buffer side effect within merge to higher-order positions observable
+	return requestsAndMeta$.pipe(
 		mergeMap(requestsAndMeta => {
 			var { request$s, meta: { savePath, ranges } } = requestsAndMeta 
 			var transformedRequest$s = request$s.map((request$, index) => {
@@ -76,6 +83,7 @@ export function makeRequests(meta$, optionalHeaders) {
 			})
 			return from(transformedRequest$s)
 		}),
+		//merge all position observables into one observable
 		mergeAll()
 	)
 }
