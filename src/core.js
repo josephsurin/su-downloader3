@@ -1,7 +1,7 @@
 const fs = require('graceful-fs')
 const request = require('request')
-import { bindNodeCallback, from } from 'rxjs'
-import { map, pluck, tap, mergeMap, filter, scan, finalize, mergeAll, } from 'rxjs/operators'
+import { bindNodeCallback, from, of } from 'rxjs'
+import { map, pluck, tap, filter, scan, finalize, mergeAll, concatMap } from 'rxjs/operators'
 import { sudPath, calculateRanges, getRangeHeaders, createRequest, partialPath, getLocalFilesize  } from './util'
 
 //the observable created from the requestHead function will emit the array [response, ''] if no error is caught
@@ -60,12 +60,14 @@ export function makeRequests(meta$, optionalHeaders) {
 	)
 }
 
-//write to buffer side effect within and merge to higher-order positions observable
+//write to buffer side effect within and merge to higher-order observable of thread positions
+//a separate meta$ observable created from the passed meta object is concatenated to the front
+//the first item emitted from the returned variable will be the meta object
 export function getThreadPositions(requestsAndMeta$) {
 	return requestsAndMeta$.pipe(
-		mergeMap(requestsAndMeta => {
+		concatMap(requestsAndMeta => {
 
-			var { request$s, meta: { savePath, ranges } } = requestsAndMeta
+			var { request$s, meta, meta: { savePath, ranges } } = requestsAndMeta
 
 			var transformedRequest$s = request$s.map((request$, index) => {
 
@@ -82,7 +84,9 @@ export function getThreadPositions(requestsAndMeta$) {
 				)
 			})
 
-			return from(transformedRequest$s)
+			var meta$ = of(meta)
+
+			return from([meta$, ...transformedRequest$s])
 		}),
 
 		//merge all position observables into one observable
