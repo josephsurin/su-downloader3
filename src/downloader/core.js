@@ -1,7 +1,7 @@
 const fs = require('graceful-fs')
 const request = require('request')
-import { bindNodeCallback, from, of, throwError, empty } from 'rxjs'
-import { map, tap, filter, scan, finalize, mergeAll, concatMap, mergeMap, pluck, throttleTime, materialize } from 'rxjs/operators'
+import { bindNodeCallback, from, of, throwError, empty, bindCallback } from 'rxjs'
+import { map, tap, filter, scan, finalize, mergeAll, concatMap, mergeMap, pluck, throttleTime } from 'rxjs/operators'
 import { sudPath, calculateRanges, getRangeHeaders, fsReadFile, createRequest, partialPath, getLocalFilesize, rebuildFiles, getInitialDownloadProgressInfo, calculateDownloadProgressInfo  } from './util'
 
 //the observable created from the requestHead function will emit the array [response, ''] if no error is caught
@@ -79,7 +79,7 @@ export function makeRequests(meta$, options) {
 	)
 }
 
-//write to buffer side effect within and rebuild upon completion
+//write to buffer within and rebuild upon completion
 //a separate meta$ observable created from the passed meta object is concatenated to the front
 //the first item emitted from the returned variable will be the meta object
 export function getThreadPositions(requestsAndMeta$) {
@@ -93,11 +93,19 @@ export function getThreadPositions(requestsAndMeta$) {
 				var partialFile = partialPath(savePath, index)
 				var startPos = ranges[index][0] + getLocalFilesize(partialFile)
 				var writeStream = fs.createWriteStream(partialFile, { flags: 'a', start: startPos })
-
+				var writeToStream = bindCallback(writeStream.write).bind(writeStream)
 				return request$.pipe(
 					filter(x => x),
-					tap(data => writeStream.write(data)),
-					scan((position, data) => position += Buffer.byteLength(data), startPos),
+					//the nested concatMap ensures the buffer is written and that this writing completes
+					//before the thread position is updated
+					//this is necessary to ensure the .PARTIAL files rebuild correctly
+					concatMap(data => 
+						of(data).pipe(
+							concatMap(data => writeToStream(data)),
+							map(() => Buffer.byteLength(data))
+						)
+					),
+					scan((position, chunkSize) => position += chunkSize, startPos),
 					finalize(() => writeStream.end())
 				)
 			})

@@ -106,6 +106,7 @@ export const getInitialDownloadProgressInfo = meta => {
 		},
 		//bytes per second
 		speed: 0,
+		//[bytes]
 		threadPositions: meta.ranges.map((range, index) => range[0] + getLocalFilesize(partialPath(meta.savePath, index)))
 	}
 }

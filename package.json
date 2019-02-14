@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "build": "babel src --out-dir dist --source-maps true",
+    "build": "babel src --out-dir build --source-maps true",
     "build-watch": "nodemon --watch ./src --exec \"npm run build\""
   },
   "author": "",
