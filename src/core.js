@@ -2,7 +2,7 @@ const fs = require('graceful-fs')
 const request = require('request')
 import { bindNodeCallback, from, of, throwError, empty } from 'rxjs'
 import { map, tap, filter, scan, finalize, mergeAll, concatMap, mergeMap, pluck, throttleTime } from 'rxjs/operators'
-import { sudPath, calculateRanges, getRangeHeaders, createRequest, partialPath, getLocalFilesize, rebuildFiles, getInitialDownloadProgressInfo, calculateDownloadProgressInfo  } from './util'
+import { sudPath, calculateRanges, getRangeHeaders, fsReadFile, createRequest, partialPath, getLocalFilesize, rebuildFiles, getInitialDownloadProgressInfo, calculateDownloadProgressInfo  } from './util'
 
 //the observable created from the requestHead function will emit the array [response, ''] if no error is caught
 //because the parameters for the request callback are (err, response, body) and body is empty
@@ -44,6 +44,12 @@ export function getMetadata(url, savePath, threads, filesize$) {
 		tap(meta => {
 			fs.writeFile(meta.sudPath, JSON.stringify(meta))
 		})
+	)
+}
+
+export function readMetadata(sudPath) {
+	return fsReadFile(sudPath).pipe(
+		map(rawMeta => JSON.parse(rawMeta))
 	)
 }
 

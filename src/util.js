@@ -54,7 +54,7 @@ export function getRangeHeaders(savePath, ranges) {
 }
 
 
-const fsReadFile = bindNodeCallback(fs.readFile)
+export const fsReadFile = bindNodeCallback(fs.readFile)
 const fsAppendFile = bindNodeCallback(fs.appendFile)
 const fsUnlink = bindNodeCallback(fs.unlink)
 
