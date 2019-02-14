@@ -1,16 +1,18 @@
 const fs = require('graceful-fs')
 const request = require('request')
-import { Observable } from 'rxjs'
+import { Observable, range, bindNodeCallback, of } from 'rxjs'
+import { map, concatMap } from 'rxjs/operators'
 
 export const sudPath = filename => filename + '.sud'
 export const partialPath = (filename, index) => `${filename}.${index}.PARTIAL` 
 
-export function createRequest(url, headers) {
+export function createRequest(url, requestOptions) {
 	return Observable.create(observer => {
-		const req = request(url, { headers })
-			.on('data', data => observer.next({ event: 'data', data }))
-			.on('error', e => observer.error(e))
+		const req = request(url, requestOptions)
+			.on('data', data => observer.next(data))
+			.on('error', error => observer.error(error))
 			.on('complete', () => observer.complete())
+
 		//clean up function called when unsubscribed
 		return () => req.abort()
 	})
@@ -45,10 +47,35 @@ export function toRangeHeader(range, position) {
 }
 
 export function getRangeHeaders(savePath, ranges) {
-	var rangeHeaders = new Array(ranges.length)
-	ranges.forEach((range, index) => {
+	return ranges.map((range, index) => {
 		var position = getLocalFilesize(partialPath(savePath, index))
-		rangeHeaders[index] = toRangeHeader(range, position)
+		return range[0] + position >= range[1] ? 0 : toRangeHeader(range, position)
 	})
-	return rangeHeaders
+}
+
+
+const fsReadFile = bindNodeCallback(fs.readFile)
+const fsAppendFile = bindNodeCallback(fs.appendFile)
+const fsUnlink = bindNodeCallback(fs.unlink)
+
+//concatenates all .PARTIAL files and renames the resulting file
+//cleans up by deleting .PARTIAL files and .sud meta data file
+export function rebuildFiles(savePath, numPartials) {
+	var sudFile = sudPath(savePath)
+
+	range(0, numPartials).pipe(
+		map(index => partialPath(savePath, index)),
+		//transform each partial file name into an observable that when subscribed to appends data to
+		//the save file and deletes it
+		//concatMap ensures this is done in order
+		concatMap(partialFile => 
+			of(partialFile).pipe(
+				concatMap(partialFile => fsReadFile(partialFile)),
+				concatMap(partialData => fsAppendFile(savePath, partialData)),
+				concatMap(() => fsUnlink(partialFile))
+			)
+		)
+	).subscribe(() => {}, console.log)
+
+	fs.unlinkSync(sudFile)
 }
