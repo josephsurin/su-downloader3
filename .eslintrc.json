@@ -4,7 +4,8 @@
         "node": true
     },
     "plugins": [
-        "react"
+        "react",
+        "classPrivateMethods"
     ],
     "parser": "babel-eslint",
     "extends": "eslint:recommended",
