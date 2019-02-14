@@ -79,3 +79,73 @@ export function rebuildFiles(savePath, numPartials) {
 
 	fs.unlinkSync(sudFile)
 }
+
+export const getInitialDownloadProgressInfo = meta => {
+	return {
+		//milliseconds
+		time: {
+			start: Date.now(),
+			elapsed: 0,
+			eta: 0
+		},
+		//bytes
+		total: {
+			filesize: meta.filesize,
+			downloaded: 0,
+			percentage: 0
+		},
+		//bytes per second
+		speed: 0,
+		threadPositions: meta.ranges.map(range => range[0])
+	}
+}
+
+//calculates the index of a thread based on its position
+function getThreadIndexFromPosition(ranges, threadPosition) {
+	return ranges.findIndex(range => threadPosition > range[0] && threadPosition <= range[1] + 1)
+}
+
+export function calculateDownloadProgressInfo(prev, threadPosition) {
+	//return object of the same form as initialDownloadProgressInfo
+	//check if the initialDownloadProgressInfo object exists, if it does, use that
+	//instead of the 'previous' downloadProgressInfo object
+	var { meta, initialDownloadProgressInfo, downloadProgressInfo } = prev
+	var prevDownloadProgressInfo = initialDownloadProgressInfo || downloadProgressInfo
+
+	var { time: { start, elapsed },  total: { filesize, downloaded }, threadPositions } = prevDownloadProgressInfo
+	var { ranges } = meta
+
+
+	var currentTimestamp = Date.now()
+	var deltaTime = currentTimestamp - start - elapsed
+	var newElapsed = elapsed + deltaTime
+
+	var threadIndex = getThreadIndexFromPosition(ranges, threadPosition)
+
+	var deltaDownloaded = threadPosition - threadPositions[threadIndex]
+	var newDownloaded = downloaded + deltaDownloaded
+	var newPercentage = 100 * newDownloaded / filesize
+
+	var newSpeed = 1000 * (deltaDownloaded / deltaTime)
+
+	threadPositions[threadIndex] = threadPosition
+
+	var newEta = (filesize - newDownloaded) / (newSpeed / 1000)
+
+	var newDownloadProgressInfo = {
+		time: {
+			start,
+			elapsed: newElapsed,
+			eta: newEta
+		},
+		total: {
+			filesize,
+			downloaded: newDownloaded,
+			percentage: newPercentage
+		},
+		speed: newSpeed,
+		threadPositions
+	}
+
+	return newDownloadProgressInfo
+}

@@ -1,8 +1,8 @@
 const fs = require('graceful-fs')
 const request = require('request')
 import { bindNodeCallback, from, of, throwError, empty } from 'rxjs'
-import { map, tap, filter, scan, finalize, mergeAll, concatMap, mergeMap } from 'rxjs/operators'
-import { sudPath, calculateRanges, getRangeHeaders, createRequest, partialPath, getLocalFilesize, rebuildFiles  } from './util'
+import { map, tap, filter, scan, finalize, mergeAll, concatMap, mergeMap, pluck } from 'rxjs/operators'
+import { sudPath, calculateRanges, getRangeHeaders, createRequest, partialPath, getLocalFilesize, rebuildFiles, getInitialDownloadProgressInfo, calculateDownloadProgressInfo  } from './util'
 
 //the observable created from the requestHead function will emit the array [response, ''] if no error is caught
 //because the parameters for the request callback are (err, response, body) and body is empty
@@ -17,7 +17,7 @@ export function getRemoteFilesize(url) {
 			if(statusCode >= 400 && statusCode <= 512) {
 				return throwError(response)
 			} else {
-				return of(response.headers['content-length'])
+				return of(parseInt(response.headers['content-length']))
 			}
 		})
 	)
@@ -110,5 +110,32 @@ export function getThreadPositions(requestsAndMeta$) {
 
 		//merge the meta observable and the already flattened position observables into one observable
 		mergeAll()
+	)
+}
+
+//use the meta data object (first item to be emitted) and the thread positions
+//to calculate various information about the download progress
+export function getDownloadProgressInfo(threadPositions$) {
+	return threadPositions$.pipe(
+		scan((acc, threadPosition) => {
+			//initialise the accumulator to hold the meta data object and initial download progress info
+			if(acc == 0) {
+				var meta = threadPosition
+				var initialDownloadProgressInfo = getInitialDownloadProgressInfo(meta)
+				//the downloadProgressInfo field is also set to the meta data object so that
+				//the meta data object is available (as the first item emitted) once plucked
+				acc = {
+					meta,
+					initialDownloadProgressInfo,
+					downloadProgressInfo: meta 
+				}
+			} else {
+				//threadPosition is an actual thread position and not the meta data object, calculate the download progress info
+				var downloadProgressInfo = calculateDownloadProgressInfo(acc, threadPosition)
+				acc = Object.assign(acc, { initialDownloadProgressInfo: null, downloadProgressInfo })
+			}
+			return acc
+		}, 0),
+		pluck('downloadProgressInfo')
 	)
 }
