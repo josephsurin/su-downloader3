@@ -73,6 +73,10 @@ export function rebuildFiles(meta) {
 	var notCompleted = ranges.some((range, index) => Math.abs(range[0] + getLocalFilesize(partialPath(savePath, index)) - range[1]) > 1)
 	if(notCompleted) return false
 
+	//if an entity at the save path already exists, delete it
+	//the user should be responsbile for ensuring this does not happen if they do not want it to
+	if(fs.existsSync(savePath)) fs.unlinkSync(savePath)
+
 	range(0, ranges.length).pipe(
 		map(index => partialPath(savePath, index)),
 		//transform each partial file name into an observable that when subscribed to appends data to
