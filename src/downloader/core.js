@@ -99,6 +99,7 @@ export function getThreadPositions(requestsAndMeta$) {
 					//the nested concatMap ensures the buffer is written and that this writing completes
 					//before the thread position is updated
 					//this is necessary to ensure the .PARTIAL files rebuild correctly
+					//we need it to be nested as the values emitted by writeToStream are not useful
 					concatMap(data => 
 						of(data).pipe(
 							concatMap(data => writeToStream(data)),
