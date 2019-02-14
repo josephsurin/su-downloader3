@@ -2,14 +2,14 @@ import { getRemoteFilesize, getMetadata, makeRequests, getThreadPositions, getDo
 
 function startDownload(locations, { threads = 4, timeout = 3*60*1000, headers = null, throttleRate = 500 } = {}) {
 
-	var { url, savePath } = locations
-
 	var filesize$, meta$
 
 	//resuming download
 	if(typeof locations == 'string') {
 		meta$ = readMetadata(locations)
 	} else { //starting new download
+		var { url, savePath } = locations
+
 		filesize$ = getRemoteFilesize(url)
 		meta$ = getMetadata(url, savePath, threads, filesize$)
 	}

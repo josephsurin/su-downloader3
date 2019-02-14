@@ -1,7 +1,7 @@
 const fs = require('graceful-fs')
 const request = require('request')
 import { bindNodeCallback, from, of, throwError, empty } from 'rxjs'
-import { map, tap, filter, scan, finalize, mergeAll, concatMap, mergeMap, pluck, throttleTime } from 'rxjs/operators'
+import { map, tap, filter, scan, finalize, mergeAll, concatMap, mergeMap, pluck, throttleTime, materialize } from 'rxjs/operators'
 import { sudPath, calculateRanges, getRangeHeaders, fsReadFile, createRequest, partialPath, getLocalFilesize, rebuildFiles, getInitialDownloadProgressInfo, calculateDownloadProgressInfo  } from './util'
 
 //the observable created from the requestHead function will emit the array [response, ''] if no error is caught
@@ -106,7 +106,7 @@ export function getThreadPositions(requestsAndMeta$) {
 			//merge flattens the higher-order observable into a single observable
 			var mergedTransformedRequests$ = from(transformedRequest$s).pipe(
 				mergeAll(),
-				finalize(() => rebuildFiles(savePath, ranges.length))
+				finalize(() => rebuildFiles(meta))
 			)
 
 			var meta$ = of(meta)

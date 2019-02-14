@@ -60,10 +60,20 @@ const fsUnlink = bindNodeCallback(fs.unlink)
 
 //concatenates all .PARTIAL files and renames the resulting file
 //cleans up by deleting .PARTIAL files and .sud meta data file
-export function rebuildFiles(savePath, numPartials) {
+export function rebuildFiles(meta) {
+	var { savePath, ranges } = meta
+
 	var sudFile = sudPath(savePath)
 
-	range(0, numPartials).pipe(
+	//since this function is called on error, completion or unsubscribe, we need to
+	//check if the files actually need to be rebuilded
+	//if each partial file is complete, the file size in bytes add the range lower bound should
+	//differ from the range upper bound by no more than 1 byte (this only occurs for the first partial file
+	//as it starts at 0)
+	var notCompleted = ranges.some((range, index) => Math.abs(range[0] + getLocalFilesize(partialPath(savePath, index)) - range[1]) > 1)
+	if(notCompleted) return false
+
+	range(0, ranges.length).pipe(
 		map(index => partialPath(savePath, index)),
 		//transform each partial file name into an observable that when subscribed to appends data to
 		//the save file and deletes it
