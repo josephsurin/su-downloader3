@@ -1,7 +1,7 @@
 const fs = require('graceful-fs')
 const request = require('request')
 import { bindNodeCallback, from, of, throwError, empty } from 'rxjs'
-import { map, tap, filter, scan, finalize, mergeAll, concatMap, mergeMap, pluck } from 'rxjs/operators'
+import { map, tap, filter, scan, finalize, mergeAll, concatMap, mergeMap, pluck, throttleTime } from 'rxjs/operators'
 import { sudPath, calculateRanges, getRangeHeaders, createRequest, partialPath, getLocalFilesize, rebuildFiles, getInitialDownloadProgressInfo, calculateDownloadProgressInfo  } from './util'
 
 //the observable created from the requestHead function will emit the array [response, ''] if no error is caught
@@ -115,8 +115,9 @@ export function getThreadPositions(requestsAndMeta$) {
 
 //use the meta data object (first item to be emitted) and the thread positions
 //to calculate various information about the download progress
-export function getDownloadProgressInfo(threadPositions$) {
+export function getDownloadProgressInfo(threadPositions$, throttleRate) {
 	return threadPositions$.pipe(
+		throttleTime(throttleRate),
 		scan((acc, threadPosition) => {
 			//initialise the accumulator to hold the meta data object and initial download progress info
 			if(acc == 0) {
@@ -124,16 +125,15 @@ export function getDownloadProgressInfo(threadPositions$) {
 				var initialDownloadProgressInfo = getInitialDownloadProgressInfo(meta)
 				//the downloadProgressInfo field is also set to the meta data object so that
 				//the meta data object is available (as the first item emitted) once plucked
-				acc = {
-					meta,
-					initialDownloadProgressInfo,
-					downloadProgressInfo: meta 
-				}
+				acc = { meta, initialDownloadProgressInfo, downloadProgressInfo: meta }
 			} else {
 				//threadPosition is an actual thread position and not the meta data object, calculate the download progress info
 				var downloadProgressInfo = calculateDownloadProgressInfo(acc, threadPosition)
+				//set initialDownloadProgressInfo to null so the next iteration of calculateDownloadProgressInfo
+				//knows to use the accumulator's downloadProgressInfo instead
 				acc = Object.assign(acc, { initialDownloadProgressInfo: null, downloadProgressInfo })
 			}
+
 			return acc
 		}, 0),
 		pluck('downloadProgressInfo')

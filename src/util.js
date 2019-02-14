@@ -39,7 +39,7 @@ export function calculateRanges(filesize, threads) {
 	return ranges
 }
 
-//position starts counting at 0, i.e. the size of the .PARTIAL file
+//position in this context starts counting at 0, i.e. the size of the .PARTIAL file
 export function toRangeHeader(range, position) {
 	var start = range[0] + position
 	var end = range[1]
@@ -96,13 +96,19 @@ export const getInitialDownloadProgressInfo = meta => {
 		},
 		//bytes per second
 		speed: 0,
-		threadPositions: meta.ranges.map(range => range[0])
+		threadPositions: meta.ranges.map((range, index) => range[0] + getLocalFilesize(partialPath(meta.savePath, index)))
 	}
 }
 
 //calculates the index of a thread based on its position
 function getThreadIndexFromPosition(ranges, threadPosition) {
 	return ranges.findIndex(range => threadPosition > range[0] && threadPosition <= range[1] + 1)
+}
+
+function initialiseDownloaded(ranges, threadPositions) {
+	return threadPositions.reduce((downloaded, threadPosition, index) => {
+		return downloaded + threadPosition - ranges[index][0]
+	}, 0)
 }
 
 export function calculateDownloadProgressInfo(prev, threadPosition) {
@@ -115,6 +121,8 @@ export function calculateDownloadProgressInfo(prev, threadPosition) {
 	var { time: { start, elapsed },  total: { filesize, downloaded }, threadPositions } = prevDownloadProgressInfo
 	var { ranges } = meta
 
+	//initialise downloaded if necessary
+	downloaded = initialDownloadProgressInfo ? initialiseDownloaded(ranges, threadPositions) : downloaded
 
 	var currentTimestamp = Date.now()
 	var deltaTime = currentTimestamp - start - elapsed
@@ -130,7 +138,7 @@ export function calculateDownloadProgressInfo(prev, threadPosition) {
 
 	threadPositions[threadIndex] = threadPosition
 
-	var newEta = (filesize - newDownloaded) / (newSpeed / 1000)
+	var newEta = (filesize - newDownloaded) / (newDownloaded / (newElapsed / 1000))
 
 	var newDownloadProgressInfo = {
 		time: {

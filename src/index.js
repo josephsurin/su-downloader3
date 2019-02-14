@@ -3,7 +3,8 @@ import { getRemoteFilesize, getMetadata, makeRequests, getThreadPositions, getDo
 const defaultOptions = {
 	threads: 4,
 	timeout: 3 * 60 * 1000,
-	headers: null
+	headers: null,
+	throttleRate: 500
 }
 
 function startDownload(url, savePath, options = defaultOptions) {
@@ -16,7 +17,7 @@ function startDownload(url, savePath, options = defaultOptions) {
 
 	var threadPositions$ = getThreadPositions(requestsAndMeta$)
 
-	var downloadProgressInfo$ = getDownloadProgressInfo(threadPositions$)
+	var downloadProgressInfo$ = getDownloadProgressInfo(threadPositions$, options.throttleRate)
 
 	//the first value emitted is the meta data object
 	return downloadProgressInfo$
