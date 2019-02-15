@@ -10,7 +10,6 @@ const SuDScheduler = class {
 
 	options = {}
 
-	//if autoStart is false, maxConcurrentDownloads is useless
 	//set maxConcurrentDownloads to 0 for unlimited concurrent downloads
 	constructor({ autoStart = true, maxConcurrentDownloads = 4, downloadOptions = {} } = {}) {
 		this.options.autoStart = autoStart
@@ -19,6 +18,27 @@ const SuDScheduler = class {
 	}
 
 	//PUBLIC METHODS
+
+	//returns the task queue
+	get taskQueue() {
+		return this.#taskQueue
+	}
+
+	get queuedCount() {
+		return this.#countTasks('queued')
+	}
+
+	get activeCount() {
+		return this.#countTasks('active')
+	}
+	
+	get stoppedCount() {
+		return this.#countTasks('stopped')
+	}
+
+	get taskCount() {
+		return this.#countTasks()
+	}
 
 	//adds a download task to the queue
 	//an observer object MUST be provided as the 2nd or 3rd positional argument
@@ -67,15 +87,15 @@ const SuDScheduler = class {
 	//pauses an active download and stops if the second parameter is true
 	//an active download that is paused is still considered active
 	//stopping a download task allows for more tasks to be auto started
-	//a stopped task is not considered active
-	//returns false if the download task is already paused or does not exist
+	//as a stopped task is not considered active
+	//returns false if the download task is already paused/stopped or has not yet started
 	pauseDownload(key, stop = false) {
 		var taskQueueItem = this.#getTaskQueueItem(key)
 		var dlSubscription = this.#downloadSubscriptions[key]
-		if(!taskQueueItem || !dlSubscription) return false
-
-		//temporary status to inform the internal observable complete function
-		taskQueueItem.status = stop ? 'stopped' : 'active'
+		
+		taskQueueItem.status = stop ? 'stopped' : taskQueueItem.status
+		
+		if(!dlSubscription) return false
 
 		dlSubscription.unsubscribe()
 		delete this.#downloadSubscriptions[key]
@@ -102,12 +122,18 @@ const SuDScheduler = class {
 
 	//starts downloading as many as possible, limited by the maxConcurrentDownloads option
 	startQueue() {
-
+		var startedCount = 0
+		var { maxConcurrentDownloads } = this.options
+		while(startedCount < maxConcurrentDownloads && this.#taskQueue[startedCount + 1]) {
+			var { key } = this.#taskQueue[startedCount]
+			this.startDownload(key)
+			startedCount++
+		}
 	}
 
-	//stops all active downloads
-	stopQueue() {
-
+	//pauses/stops all active downloads
+	pauseAll(stop = false) {
+		this.#taskQueue.forEach(taskQueueItem => this.pauseDownload(taskQueueItem.key, stop))
 	}
 
 	//PRIVATE METHODS
