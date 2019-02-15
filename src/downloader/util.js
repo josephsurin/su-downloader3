@@ -180,6 +180,6 @@ export function killFiles(sudPath) {
 	for(var index = 0; index < ranges.length; index++) {
 		fs.unlinkSync(partialPath(savePath, index))
 	}
-	fs.unlinkSync(savePath)
+	fs.unlinkSync(sudPath)
 	return true
 }

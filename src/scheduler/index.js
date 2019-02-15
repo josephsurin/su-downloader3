@@ -32,11 +32,11 @@ const SuDScheduler = class {
 		var taskQueueItem = {
 			key: typeof locations == 'string' ? locations : sudPath(locations.savePath),
 			status: 'queued',
-			params: { locations, options },
+			params: { locations, options: options.next ? {} : options },
 			userObserver
 		}
 		this.#taskQueue.push(taskQueueItem)
-
+		
 		this.#tryNextInQueue()
 		
 		if(!this.options.autoStart) {
@@ -84,7 +84,7 @@ const SuDScheduler = class {
 	}
 
 	//stops an active download and removes associated .sud and .PARTIAL files, or
-	//removes download task from queue
+	//removes queued download task from queue
 	killDownload(key) {
 		var taskQueueItem = this.#getTaskQueueItem(key)
 		var { status } = taskQueueItem
@@ -94,8 +94,10 @@ const SuDScheduler = class {
 			delete this.#downloadSubscriptions[key]
 		}
 
-		this.#removeTaskQueueItem()
+		this.#removeTaskQueueItem(key)
 		killFiles(key)
+
+		this.#tryNextInQueue()
 	}
 
 	//starts downloading as many as possible, limited by the maxConcurrentDownloads option
