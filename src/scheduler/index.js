@@ -41,16 +41,19 @@ const SuDScheduler = class {
 	}
 
 	//adds a download task to the queue
-	//an observer object MUST be provided as the 2nd or 3rd positional argument
+	//an observer object MUST be provided as the 3rd or 4th positional argument
 	//this method is used to add new downloads or resume from pre existing .sud files
 	//if the intention is to queue a download from a pre existing .sud file, locations should be
 	//the .sud file path and options.threads will be unnecessary
-	queueDownload(locations, options, userObserver) {
+	//key should be unique
+	queueDownload(key, locations, options, userObserver) {
+		if(!this.#keyIsUnique(key)) throw('KEYS MUST BE UNIQUE')
+
 		//if options is omitted, assume it is the observer
 		if(options.next) var userObserver = options
 
 		var taskQueueItem = {
-			key: typeof locations == 'string' ? locations : sudPath(locations.savePath),
+			key,
 			status: 'queued',
 			params: { locations, options: options.next ? {} : options },
 			userObserver
@@ -62,9 +65,11 @@ const SuDScheduler = class {
 		if(!this.options.autoStart) {
 			//convenience object to allow the user to dot chain start()
 			return {
-				start: () => this.startDownload(taskQueueItem.key)
+				start: () => this.startDownload(key)
 			}
 		}
+
+		return true
 	}
 
 	//starts a download task, or resumes an active download
@@ -150,6 +155,10 @@ const SuDScheduler = class {
 
 	#countTasks() {
 		return this.#taskQueue.length
+	}
+
+	#keyIsUnique(key) {
+		return this.#getTaskQueueItem(key) == undefined
 	}
 
 	//checks if the conditions for starting a new task are met

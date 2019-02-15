@@ -19,22 +19,22 @@ var schedulerOptions = {
 
 const suDScheduler = new SuDScheduler(schedulerOptions)
 
-suDScheduler.queueDownload(locations(1), testObserver(console.draft()))
+suDScheduler.queueDownload('1', locations(1), testObserver(console.draft()))
 console.log('\n')
 
-suDScheduler.queueDownload(locations(2), testObserver(console.draft()))
+suDScheduler.queueDownload('2', locations(2), testObserver(console.draft()))
 console.log('\n')
 
-suDScheduler.queueDownload(locations(3), testObserver(console.draft()))
+suDScheduler.queueDownload('3', locations(3), testObserver(console.draft()))
 
 //stop download 1 after 1s, download 3 will start downloading once download 1 is stopped
-setTimeout(() => suDScheduler.pauseDownload(sudPath(savePath(1)), true), 1000)
+setTimeout(() => suDScheduler.pauseDownload('1', true), 1000)
 
 //stop all downloads after a further 3s
 setTimeout(() => suDScheduler.pauseAll(true), 4000)
 
 //start download 1 and let the queue run after a further 0.5s
-setTimeout(() => suDScheduler.startDownload(sudPath(savePath(1))), 4500)
+setTimeout(() => suDScheduler.startDownload('1'), 4500)
 
 //start the queue again after a further 2s
 setTimeout(() => suDScheduler.startQueue(), 6500)

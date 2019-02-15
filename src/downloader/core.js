@@ -11,7 +11,7 @@ import { sudPath, calculateRanges, getRangeHeaders, fsReadFile, createRequest, p
 //see https://rxjs.dev/api/index/function/bindNodeCallback for more info
 const requestHead = bindNodeCallback(request.head)
 
-export function getMetadata(url, savePath, threads) {
+export function getMetadata(url, threads, savePath, saveDir) {
 	return requestHead(url).pipe(
 		mergeMap(x => {
 			var response = x[0]
@@ -26,7 +26,7 @@ export function getMetadata(url, savePath, threads) {
 
 			var ranges = calculateRanges(filesize, threads)
 
-			savePath = savePath || path.join(__dirname, path.basename(Url.parse(url).path))
+			savePath = savePath || path.join(saveDir || process.cwd(), path.basename(Url.parse(url).path))
 			
 			var meta = {
 				url,
