@@ -17,20 +17,20 @@ program
 	.option('-T, --timeout [timeout]', 'how long to maintain connection before aborting (ms)')
 	.option('-H, --headers [headers]', 'HTTP request headers')
 	.option('-r, --throttleRate [throttleRate]', 'throttle time between progress info')
-	.action((url, save_path, options) => {
+	.action((url, options) => {
 		if(!url) {
 			console.error('a url is required, type sud3 start --help for help')
 			process.exit(1)
 		}
-		if(!save_path) {
-			console.error('a save path is required, type sud3 start --help for help')
-			process.exit(1)
+		var savePath = null
+		if(options) {
+			if(options.save_path) savePath = options.save_path
+			if(options.threads) options.threads = parseInt(options.threads)
+			if(options.timeout) options.timeout = parseInt(options.timeout)
+			if(options.headers) options.headers = JSON.parse(options.headers)
+			if(options.throttleRate) options.throttleRate = parseInt(options.throttleRate)
 		}
-		if(options.threads) options.threads = parseInt(options.threads)
-		if(options.timeout) options.timeout = parseInt(options.timeout)
-		if(options.headers) options.headers = JSON.parse(options.headers)
-		if(options.throttleRate) options.throttleRate = parseInt(options.throttleRate)
-		startDownload({ url, savePath: save_path }, options).subscribe(observer)
+		startDownload({ url, savePath }, options).subscribe(observer)
 	})
 
 program

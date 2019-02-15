@@ -27,7 +27,7 @@ export function getMetadata(url, savePath, threads) {
 			var ranges = calculateRanges(filesize, threads)
 
 			savePath = savePath || path.join(__dirname, path.basename(Url.parse(url).path))
-
+			
 			var meta = {
 				url,
 				savePath,
