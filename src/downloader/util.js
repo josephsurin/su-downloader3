@@ -172,3 +172,14 @@ export function calculateDownloadProgressInfo(prev, threadPosition) {
 
 	return newDownloadProgressInfo
 }
+
+export function killFiles(sudPath) {
+	if(!fs.existsSync(sudPath)) return false
+	var meta = JSON.parse(fs.readFileSync(sudPath))
+	var { savePath, ranges } = meta
+	for(var index = 0; index < ranges.length; index++) {
+		fs.unlinkSync(partialPath(savePath, index))
+	}
+	fs.unlinkSync(savePath)
+	return true
+}

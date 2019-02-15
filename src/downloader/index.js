@@ -1,5 +1,5 @@
 import { getRemoteFilesize, getMetadata, makeRequests, getThreadPositions, getDownloadProgressInfo, readMetadata } from './core'
-import { sudPath } from './util'
+import { killFiles, sudPath } from './util'
 
 function startDownload(locations, { threads = 4, timeout = 3*60*1000, headers = null, throttleRate = 500 } = {}) {
 
@@ -27,5 +27,6 @@ function startDownload(locations, { threads = 4, timeout = 3*60*1000, headers = 
 
 module.exports = {
 	startDownload,
+	killFiles,
 	sudPath
 }

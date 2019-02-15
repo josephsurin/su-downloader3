@@ -1,4 +1,4 @@
-import { startDownload, sudPath } from '../downloader/'
+import { startDownload, killFiles, sudPath } from '../downloader/'
 
 const SuDScheduler = class {
 
@@ -21,7 +21,7 @@ const SuDScheduler = class {
 	//PUBLIC METHODS
 
 	//adds a download task to the queue
-	//if autoStart option is enabled, userObserver MUST be provided
+	//an observer object MUST be provided as the 2nd or 3rd positional argument
 	//this method is used to add new downloads or resume from pre existing .sud files
 	//if the intention is to queue a download from a pre existing .sud file, locations should be
 	//the .sud file path and options.threads will be unnecessary
@@ -36,30 +36,27 @@ const SuDScheduler = class {
 			userObserver
 		}
 		this.#taskQueue.push(taskQueueItem)
+
+		this.#tryNextInQueue()
 		
-		if(this.options.autoStart && this.#canStartNew()) {
-			this.#startNextInQueue()
-		} else {
+		if(!this.options.autoStart) {
 			//convenience object to allow the user to dot chain start()
 			return {
-				start: () => this.startDownload(taskQueueItem.key, userObserver)
+				start: () => this.startDownload(taskQueueItem.key)
 			}
 		}
-		
 	}
 
 	//starts a download task, or resumes an active download
 	//starting a new download task using this methods will ignore
 	//the max concurrent download limit
-	startDownload(key, observer) {
+	startDownload(key) {
 		var taskQueueItem = this.#getTaskQueueItem(key)
 		var { userObserver, params: { locations, options } } = taskQueueItem
 		
 		taskQueueItem.status = 'active'
-		
-		//reuse the original user observer if it is defined
-		if(userObserver.next) observer = userObserver
-		var wrappedObserver = this.#wrapInternalObserver(key, observer)
+
+		var wrappedObserver = this.#wrapInternalObserver(key, userObserver)
 		var dlOptions = Object.assign(this.options.downloadOptions, options)
 		var dlSubscription = startDownload(locations, dlOptions).subscribe(wrappedObserver)
 		this.#downloadSubscriptions[key] = dlSubscription
@@ -78,15 +75,27 @@ const SuDScheduler = class {
 		if(!taskQueueItem || !dlSubscription) return false
 
 		//temporary status to inform the internal observable complete function
-		taskQueueItem.status = stop ? 'stopping' : 'pausing'
+		taskQueueItem.status = stop ? 'stopped' : 'active'
 
 		dlSubscription.unsubscribe()
+		delete this.#downloadSubscriptions[key]
+
+		this.#tryNextInQueue()
 	}
 
 	//stops an active download and removes associated .sud and .PARTIAL files, or
-	//removes download task from queue 
+	//removes download task from queue
 	killDownload(key) {
+		var taskQueueItem = this.#getTaskQueueItem(key)
+		var { status } = taskQueueItem
 
+		if(status == 'active') {
+			this.#downloadSubscriptions[key].unsubscribe()
+			delete this.#downloadSubscriptions[key]
+		}
+
+		this.#removeTaskQueueItem()
+		killFiles(key)
 	}
 
 	//starts downloading as many as possible, limited by the maxConcurrentDownloads option
@@ -94,7 +103,7 @@ const SuDScheduler = class {
 
 	}
 
-	//stops all active (including forced) downloads
+	//stops all active downloads
 	stopQueue() {
 
 	}
@@ -109,7 +118,7 @@ const SuDScheduler = class {
 	}
 
 	//checks if the conditions for starting a new task are met
-	#canStartNew() {
+	#canStartNext() {
 		var { maxConcurrentDownloads } = this.options
 		var nextExists = this.#taskQueue.findIndex(taskQueueItem => taskQueueItem.status == 'queued') != -1
 		return (maxConcurrentDownloads == 0 || this.#countStatus('active') < maxConcurrentDownloads) && nextExists
@@ -117,8 +126,15 @@ const SuDScheduler = class {
 
 	//starts the next task in queue
 	#startNextInQueue() {
-		var { key, userObserver } = this.#taskQueue.find(taskQueueItem => taskQueueItem.status == 'queued')
-		this.startDownload(key, userObserver)
+		var { key } = this.#taskQueue.find(taskQueueItem => taskQueueItem.status == 'queued')
+		this.startDownload(key)
+	}
+
+	//checks for start new condition and starts next if met
+	#tryNextInQueue() {
+		if(this.options.autoStart && this.#canStartNext()) {
+			this.#startNextInQueue()
+		}
 	}
 
 	#getTaskQueueItem(key) {
@@ -142,21 +158,11 @@ const SuDScheduler = class {
 			complete: () => {
 				userObservable.complete()
 
-				//change status if pausing or stopping
-				switch(status) {
-					//if status is active, this function is being called because the download has finished
-					case 'active': this.#removeTaskQueueItem(key); break
-					case 'pausing': taskQueueItem.status = 'active'; break
-					case 'stopping': taskQueueItem.status = 'stopped'
-				}
-
-				//remove the useless dead subscription
+				//remove the useless dead subscription and internal reference
+				this.#removeTaskQueueItem(key)
 				delete this.#downloadSubscriptions[key]
 
-				//try and start next download
-				if(this.options.autoStart && this.#canStartNew()) {
-					this.#startNextInQueue()
-				}
+				this.#tryNextInQueue()
 			}
 		}
 	}
