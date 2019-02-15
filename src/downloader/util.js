@@ -1,7 +1,7 @@
 const fs = require('graceful-fs')
 const request = require('request')
-import { Observable, range, bindNodeCallback, of } from 'rxjs'
-import { map, concatMap, ignoreElements } from 'rxjs/operators'
+import { Observable, range, bindNodeCallback, of, throwError } from 'rxjs'
+import { map, concatMap, ignoreElements, concat } from 'rxjs/operators'
 
 export const sudPath = filename => filename + '.sud'
 export const partialPath = (filename, index) => `${filename}.${index}.PARTIAL` 
@@ -65,19 +65,16 @@ export function rebuildFiles(meta) {
 
 	var sudFile = sudPath(savePath)
 
-	//since this function is called on error, completion or unsubscribe, we need to
 	//check if the files actually need to be rebuilded
 	//if each partial file is complete, the file size in bytes add the range lower bound should
 	//differ from the range upper bound by no more than 1 byte (this only occurs for the first partial file
 	//as it starts at 0)
-	// var notCompleted = ranges.some((range, index) => Math.abs(range[0] + getLocalFilesize(partialPath(savePath, index)) - range[1]) > 1)
-	// if(notCompleted) return false
+	var notCompleted = ranges.some((range, index) => Math.abs(range[0] + getLocalFilesize(partialPath(savePath, index)) - range[1]) > 1)
+	if(notCompleted) throwError('REBUILD ERROR: INCORRECT PARTIAL FILE SIZEZ')
 
 	//if an entity at the save path already exists, delete it
 	//the user should be responsbile for ensuring this does not happen if they do not want it to
 	if(fs.existsSync(savePath)) fs.unlinkSync(savePath)
-
-	fs.unlinkSync(sudFile)
 
 	return range(0, ranges.length).pipe(
 		map(index => partialPath(savePath, index)),
@@ -91,6 +88,9 @@ export function rebuildFiles(meta) {
 				concatMap(() => fsUnlink(partialFile))
 			)
 		),
+		concat(fsUnlink(sudFile)),
+		//we don't care about the output, we just wanted to perform the actions
+		//and put them in observables so the observable chain isn't interrupted
 		ignoreElements()
 	)
 

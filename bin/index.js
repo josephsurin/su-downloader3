@@ -18,11 +18,11 @@ program
 	.option('-r, --throttleRate [throttleRate]', 'throttle time between progress info')
 	.action((url, save_path, options) => {
 		if(!url) {
-			console.error('a url is required, please type sud3 --help for help')
+			console.error('a url is required, type sud3 start --help for help')
 			process.exit(1)
 		}
 		if(!save_path) {
-			console.error('a save path is required, please type sud3 --help for help')
+			console.error('a save path is required, type sud3 start --help for help')
 			process.exit(1)
 		}
 		if(options.threads) options.threads = parseInt(options.threads)
@@ -40,11 +40,11 @@ program
 	.option('-r, --throttleRate [throttleRate]', 'throttle time between progress info')
 	.action((sud_path, options) => {
 		if(!sud_path) {
-			console.error('a sud path is required, please type sud3 --help for help')
+			console.error('a sud path is required, type sud3 resume --help for help')
 			process.exit(1)
 		}
 		if(!fs.existsSync(sud_path)) {
-			console.error('the provided sud path is invalid, please type sud3 --help for help')
+			console.error('the provided sud path is invalid, type sud3 resume --help for help')
 			process.exit(1)
 		}
 		if(options.timeout) options.timeout = parseInt(options.timeout)

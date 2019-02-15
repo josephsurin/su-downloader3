@@ -115,6 +115,7 @@ export function getThreadPositions(requestsAndMeta$) {
 			//merge flattens the higher-order observable into a single observable
 			var mergedTransformedRequests$ = from(transformedRequest$s).pipe(
 				mergeAll(),
+				//once the source observable finishes, rebuild the files
 				concat(rebuildFiles(meta))
 			)
 

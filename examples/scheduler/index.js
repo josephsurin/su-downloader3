@@ -8,7 +8,7 @@ var savePath = i => path.join(__dirname, `5meg${i}.test`)
 var locations = i => { return { url, savePath: savePath(i) }}
 var options = {
 	threads: 4,
-	throttleRate: 50
+	throttleRate: 1
 }
 
 var schedulerOptions = {
