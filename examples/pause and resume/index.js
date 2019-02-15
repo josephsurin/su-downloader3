@@ -7,7 +7,7 @@ var savePath = path.join(__dirname, '5meg.test')
 var locations = { url, savePath }
 var options = {
 	threads: 7,
-	throttleRate: 0
+	throttleRate: 50
 }
 
 var draft = console.draft()
