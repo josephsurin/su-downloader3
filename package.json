@@ -1,7 +1,19 @@
 {
   "name": "su-downloader3",
   "version": "1.0.0",
-  "description": "HTTP/S segmented file downloader",
+  "description": "HTTP segmented file downloader",
+  "keywords": [
+    "http",
+    "util",
+    "utility",
+    "downloader",
+    "download manager",
+    "pause",
+    "resumable",
+    "progress",
+    "multiple",
+    "scheduler"
+  ],
   "main": "build/index.js",
   "scripts": {
     "build": "babel src --out-dir build --source-maps true",
@@ -11,7 +23,14 @@
   "bin": {
     "sud3": "./bin/index.js"
   },
-  "author": "",
+  "author": "Joseph Surin <joseph.surin@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fumetsuu/su-downloader3.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fumetsuu/su-downloader3/issues"
+  },
   "license": "ISC",
   "devDependencies": {
     "@babel/cli": "^7.2.3",
