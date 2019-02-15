@@ -2,7 +2,7 @@
   "name": "su-downloader3",
   "version": "1.0.0",
   "description": "HTTP/S segmented file downloader",
-  "main": "src/index.js",
+  "main": "build/index.js",
   "scripts": {
     "build": "babel src --out-dir build --source-maps true",
     "build-watch": "nodemon --watch ./src --exec \"npm run build\"",
