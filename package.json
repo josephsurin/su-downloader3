@@ -5,7 +5,8 @@
   "main": "src/index.js",
   "scripts": {
     "build": "babel src --out-dir build --source-maps true",
-    "build-watch": "nodemon --watch ./src --exec \"npm run build\""
+    "build-watch": "nodemon --watch ./src --exec \"npm run build\"",
+    "test": "jest"
   },
   "author": "",
   "license": "ISC",
@@ -15,7 +16,8 @@
     "@babel/plugin-proposal-class-properties": "^7.3.0",
     "@babel/plugin-proposal-private-methods": "^7.3.2",
     "@babel/preset-env": "^7.3.1",
-    "babel-eslint": "^10.0.1"
+    "babel-eslint": "^10.0.1",
+    "jest": "^24.1.0"
   },
   "dependencies": {
     "graceful-fs": "^4.1.15",

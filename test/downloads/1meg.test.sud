@@ -1,0 +1,1 @@
+{"url":"http://ftp.iinet.net.au/pub/test/1meg.test","savePath":"./test/downloads/1meg.test","sudPath":"./test/downloads/1meg.test.sud","filesize":1000000,"ranges":[[0,333333],[333334,666666],[666667,1000000]]}
