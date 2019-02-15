@@ -122,12 +122,19 @@ const SuDScheduler = class {
 
 	//starts downloading as many as possible, limited by the maxConcurrentDownloads option
 	startQueue() {
-		var startedCount = 0
+		this.#taskQueue.forEach(taskQueueItem => {
+			if(taskQueueItem.status == 'stopped') {
+				taskQueueItem.status = 'queued'
+			}
+		})
+
+		var activeCount = this.#countStatus('active')
 		var { maxConcurrentDownloads } = this.options
-		while(startedCount < maxConcurrentDownloads && this.#taskQueue[startedCount + 1]) {
-			var { key } = this.#taskQueue[startedCount]
+		while(activeCount < maxConcurrentDownloads && this.#taskQueue[activeCount + 1]) {
+			var { key, status } = this.#taskQueue[activeCount]
+			if(status == 'active') return
 			this.startDownload(key)
-			startedCount++
+			activeCount++
 		}
 	}
 

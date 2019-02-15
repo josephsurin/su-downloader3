@@ -17,7 +17,10 @@
     "@babel/plugin-proposal-private-methods": "^7.3.2",
     "@babel/preset-env": "^7.3.1",
     "babel-eslint": "^10.0.1",
-    "jest": "^24.1.0"
+    "bytes": "^3.1.0",
+    "draftlog": "^1.0.12",
+    "jest": "^24.1.0",
+    "log-update": "^2.3.0"
   },
   "dependencies": {
     "graceful-fs": "^4.1.15",

@@ -96,11 +96,10 @@ export function rebuildFiles(meta) {
 
 export const getInitialDownloadProgressInfo = meta => {
 	return {
-		//milliseconds
 		time: {
-			start: Date.now(),
-			elapsed: 0,
-			eta: 0
+			start: Date.now(), //timestamp
+			elapsed: 0, //milliseconds
+			eta: 0 //seconds
 		},
 		//bytes
 		total: {
@@ -110,6 +109,7 @@ export const getInitialDownloadProgressInfo = meta => {
 		},
 		//bytes per second
 		speed: 0,
+		avgSpeed: 0,
 		//[bytes]
 		threadPositions: meta.ranges.map((range, index) => range[0] + getLocalFilesize(partialPath(meta.savePath, index)))
 	}
@@ -153,7 +153,8 @@ export function calculateDownloadProgressInfo(prev, threadPosition) {
 
 	threadPositions[threadIndex] = threadPosition
 
-	var newEta = (filesize - newDownloaded) / (newDownloaded / (newElapsed / 1000))
+	var avgSpeed = 1000 * newDownloaded / newElapsed
+	var newEta = (filesize - newDownloaded) / avgSpeed
 
 	var newDownloadProgressInfo = {
 		time: {
@@ -167,6 +168,7 @@ export function calculateDownloadProgressInfo(prev, threadPosition) {
 			percentage: newPercentage
 		},
 		speed: newSpeed,
+		avgSpeed,
 		threadPositions
 	}
 
