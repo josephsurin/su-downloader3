@@ -4,8 +4,8 @@ const { calculateRanges, getRangeHeaders, getLocalFilesize, rebuildFiles } = req
 
 
 test('get local file size test 1', () => {
-	var filesize = getLocalFilesize('./test/downloads/1meg.test.0.PARTIAL')
-	expect(filesize).toBe(333334)
+	var filesize = getLocalFilesize('./test/downloads/d1.test.0.PARTIAL')
+	expect(filesize).toBe(50)
 })
 
 test('get local file size test 2 (non-existent file)', () => {
@@ -28,15 +28,15 @@ test('calculate ranges test 2', () => {
 })
 
 test('get range headers test 1', () => {
-	const savePath = './test/downloads/1meg.test'
-	var ranges = [[0,333333],[333334,666666],[666667,1000000]]
-	const rangeHeaders = [0,0,0]
+	const savePath = './test/downloads/d1.test'
+	var ranges = [[0,50],[51,100]]
+	const rangeHeaders = [0,0]
 	expect(getRangeHeaders(savePath, ranges)).toEqual(rangeHeaders)
 })
 
 test('get range headers test 2', () => {
-	const savePath = './test/downloads/1megpart.test'
-	var ranges = [[0,333333],[333334,666666],[666667,1000000]]
-	const rangeHeaders = ['bytes=180081-333333','bytes=543230-666666','bytes=865203-1000000']
+	const savePath = './test/downloads/d2.test'
+	var ranges = [[0,50],[51,100]]
+	const rangeHeaders = ['bytes=21-50','bytes=53-100']
 	expect(getRangeHeaders(savePath, ranges)).toEqual(rangeHeaders)
 })
