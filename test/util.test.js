@@ -1,5 +1,6 @@
 const fs = require('graceful-fs')
-import { calculateRanges, getRangeHeaders, getLocalFilesize, rebuildFiles } from '../build/downloader/util'
+const path = require('path')
+const { calculateRanges, getRangeHeaders, getLocalFilesize, rebuildFiles } = require(path.join(__dirname, '../build/downloader/util'))
 
 
 test('get local file size test 1', () => {
@@ -38,10 +39,4 @@ test('get range headers test 2', () => {
 	var ranges = [[0,333333],[333334,666666],[666667,1000000]]
 	const rangeHeaders = ['bytes=180081-333333','bytes=543230-666666','bytes=865203-1000000']
 	expect(getRangeHeaders(savePath, ranges)).toEqual(rangeHeaders)
-})
-
-test('rebuild returns false when download is incomplete', () => {
-	const meta = {"url":"http://ftp.iinet.net.au/pub/test/1meg.test","savePath":"./test/downloads/1megpart.test","sudPath":"./test/downloads/1megpart.test.sud","filesize":1000000,"ranges":[[0,333333],[333334,666666],[666667,1000000]]}
-
-	expect(rebuildFiles(meta)).toBe(false)
 })
