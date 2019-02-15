@@ -20,6 +20,8 @@ const options = {
 	throttleRate: 100
 }
 
+fs.mkdirSync('./test/downloads/big/')
+
 test('simple download and progress info test (monotonically increasing download percentage)', done => {
 	var download$ = startDownload(locations, options).pipe(
 		skip(1),
