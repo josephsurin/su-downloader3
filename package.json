@@ -31,7 +31,7 @@
   "bugs": {
     "url": "https://github.com/fumetsuu/su-downloader3/issues"
   },
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@babel/cli": "^7.2.3",
     "@babel/core": "^7.2.2",

@@ -12,8 +12,8 @@ const testObserver = id => {
 	}
 }
 
-const url = 'http://ftp.iinet.net.au/pub/test/5meg.test1'
-const savePath = `./test/downloads/big/5meg.test1`
+const url = 'http://ftp.iinet.net.au/pub/test/1meg.test'
+const savePath = `./test/downloads/big/1meg.test`
 const locations = { url, savePath }
 const options = {
 	threads: 2,
