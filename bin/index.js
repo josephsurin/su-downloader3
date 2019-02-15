@@ -10,8 +10,9 @@ program
 	.version('1.0.0')
 
 program
-	.command('start [url] [save_path]')
+	.command('start [url]')
 	.description('start a new download')
+	.option('-s', '--save-path [save_path]', 'relative path to save file to')
 	.option('-t, --threads [threads]', 'number of threads to use')
 	.option('-T, --timeout [timeout]', 'how long to maintain connection before aborting (ms)')
 	.option('-H, --headers [headers]', 'HTTP request headers')

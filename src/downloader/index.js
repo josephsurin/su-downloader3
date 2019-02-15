@@ -1,18 +1,26 @@
-import { getRemoteFilesize, getMetadata, makeRequests, getThreadPositions, getDownloadProgressInfo, readMetadata } from './core'
-import { killFiles, sudPath } from './util'
+import { getMetadata, makeRequests, getThreadPositions, getDownloadProgressInfo, readMetadata } from './core'
+import { killFiles, sudPath, isSudPath } from './util'
 
 function startDownload(locations, { threads = 4, timeout = 3*60*1000, headers = null, throttleRate = 500 } = {}) {
 
-	var filesize$, meta$
+	var meta$
 
-	//resuming download
-	if(typeof locations == 'string') {
+	if(typeof locations == 'string' && isSudPath(locations)) {
+
+		//resuming download
 		meta$ = readMetadata(locations)
-	} else { //starting new download
-		var { url, savePath } = locations
 
-		filesize$ = getRemoteFilesize(url)
-		meta$ = getMetadata(url, savePath, threads, filesize$)
+	} else if(typeof locations == 'string') {
+
+		//starting new download without save path
+		meta$ = getMetadata(locations, null, threads)
+
+	} else {
+
+		//starting new download with save path
+		var { url, savePath } = locations
+		meta$ = getMetadata(url, savePath, threads)
+
 	}
 
 	var requestsAndMeta$ = makeRequests(meta$, { timeout, headers })

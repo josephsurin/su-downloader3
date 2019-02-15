@@ -1,4 +1,6 @@
 const fs = require('graceful-fs')
+const path = require('path')
+const Url = require('url')
 const request = require('request')
 import { bindNodeCallback, from, of, throwError, empty, bindCallback, Observable } from 'rxjs'
 import { map, tap, filter, scan, finalize, mergeAll, concatMap, mergeMap, pluck, throttleTime, concat } from 'rxjs/operators'
@@ -9,7 +11,7 @@ import { sudPath, calculateRanges, getRangeHeaders, fsReadFile, createRequest, p
 //see https://rxjs.dev/api/index/function/bindNodeCallback for more info
 const requestHead = bindNodeCallback(request.head)
 
-export function getRemoteFilesize(url) {
+export function getMetadata(url, savePath, threads) {
 	return requestHead(url).pipe(
 		mergeMap(x => {
 			var response = x[0]
@@ -19,15 +21,12 @@ export function getRemoteFilesize(url) {
 			} else {
 				return of(parseInt(response.headers['content-length']))
 			}
-		})
-	)
-}
-
-export function getMetadata(url, savePath, threads, filesize$) {
-	return filesize$.pipe(
+		}),
 		map(filesize => {
 
 			var ranges = calculateRanges(filesize, threads)
+
+			savePath = savePath || path.join(__dirname, path.basename(Url.parse(url).path))
 
 			var meta = {
 				url,

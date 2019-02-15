@@ -8,15 +8,15 @@ const observer = () => {
 	return {
 		next: x => {
 			if(x.savePath) {
-				sp = path.basename(x.savePath)
-				draft = console.draft(`starting download for ${sp}   |   url: ${x.url}`)
+				sp = x.savePath
+				draft = console.draft(`DOWNLOAD PATH: ${path.basename(sp)}   |   HTTP FILE: ${x.url}`)
 			} else {
-				draft(`${sp}  |  Downloaded: ${bytes(x.total.downloaded)}/${bytes(x.total.filesize)}   |   Speed: ${bytes(x.speed)}/s   |   Avg Speed: ${bytes(x.avgSpeed)}/s   |   Elapsed: ${x.time.elapsed / 1000}s   |   ETA: ${x.time.eta.toFixed(2)}s \n ${percentageToBar(x.total.percentage)}   ${x.total.percentage.toFixed(2)}%`)
+				draft(`${path.basename(sp)}  |  Downloaded: ${bytes(x.total.downloaded)}/${bytes(x.total.filesize)}   |   Speed: ${bytes(x.speed)}/s   |   Avg Speed: ${bytes(x.avgSpeed)}/s   |   Elapsed: ${x.time.elapsed / 1000}s   |   ETA: ${x.time.eta.toFixed(2)}s \n ${percentageToBar(x.total.percentage)}   ${x.total.percentage.toFixed(2)}%`)
 			}
 		},
 		error: console.log,
 		complete: () => {
-			draft('FINISHED DOWNLOADING ', sp)
+			draft('FINISHED DOWNLOADING FILE SAVED TO \n', sp)
 			process.exit(0)
 		}
 	}

@@ -5,6 +5,7 @@ import { map, concatMap, ignoreElements, concat } from 'rxjs/operators'
 
 export const sudPath = filename => filename + '.sud'
 export const partialPath = (filename, index) => `${filename}.${index}.PARTIAL` 
+export const isSudPath = filename => /.sud$/.test(filename)
 
 export function createRequest(url, requestOptions) {
 	return Observable.create(observer => {
