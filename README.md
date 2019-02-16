@@ -204,8 +204,11 @@ su-downloader3 uses [Rxjs](https://github.com/ReactiveX/rxjs/) to handle streams
 There are 4 stages involved with the download process. In each stage, the observable is transformed in some way.
 
 Stage 1: A HEAD request is made to get the file size, which is used to create and write the meta data.
+
 Stage 2: The GET requests are made based on the meta data.
+
 Stage 3: The data from the GET requests are written to the `.PARTIAL` files and the position of each thread is updated. The rebuilding of files is set up.
+
 Stage 4: The download progress info is created based on the thread positions and meta data.
 
 #### Stage 1
