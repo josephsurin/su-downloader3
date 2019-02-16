@@ -4,6 +4,15 @@
 
 [![travis.ci](https://img.shields.io/travis/fumetsuu/su-downloader3/master.svg?style=flat-square)](https://travis-ci.org/fumetsuu/su-downloader3)
 
+## Table of Contents
+- [Basic Usage](#basic-usage)
+- [Overview](#overview)
+	- [The downloader](#the-downloader)
+	- [The scheduler](#the-scheduler)
+- [API](#api)
+- [Design](#design)
+
+
 ## Basic Usage
 su-downloader3 has a very minimal API and is designed to simplify the task of downloading large files via HTTP.
 
