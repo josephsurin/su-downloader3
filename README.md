@@ -52,7 +52,9 @@ The scheduler can be configured to use a default download options object which a
 If you are using the scheduler, you should never need to call the `startDownload` function. Instead, queue the download using the scheduler's `queueDownload` instance method, and then the `startDownload` instance method.
 
 <a name="startDownload">
+	
 ### startDownload(locations, options) => Observable
+
 </a>
 The download begins when the returned observable is subscribed to by the user.
 
