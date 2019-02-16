@@ -43,12 +43,19 @@ The scheduler can be configured to use a default download options object which a
 If you are using the scheduler, you should never need to call the `startDownload` function. Instead, queue the download using the scheduler's `queueDownload` instance method, and then the `startDownload` instance method.
 ### startDownload(locations, options) => Observable
 The download begins when the returned observable is subscribed to by the user.
+
+
 | Param | Type | Default | Description |
-| --- | --- | --- | --- |
+| --- | :---: | :---: | --- |
 | locations | `object` or `string` | | If string, `locations` should be either a download url or an existing `.sud` path. |
 | locations.url | `string` | | url to download file from |
 | locations.savePath | `string` | | Path (including filename) to save the file to |
 | locations.saveDir	| `string` | | Directory to save the file to |
+| options | `object` | | Download options|
+| options.threads | `integer` | 4 | The number of segments to break the file into
+| options.timeout | `integer` | 18000 | How long to wait without receiving data before aborting download, in milliseconds
+| options.headers | `object` | | Custom HTTP headers
+| options.throttleRate | `integer` | 500 | Minimum time interval between successive emissions of download progress info, in milliseconds |
 
 Note: Only one of `locations.savePath` and `locations.saveDir` need to be defined. If both are defined, the file is saved to the path given by `locations.savePath` and `locations.saveDir` is ignored.
 If no save path is provided, the file will be saved to the current working directory with a filename determined by the url. e.g. `http://download.location/file.zip` will save the file to `./file.zip`.
