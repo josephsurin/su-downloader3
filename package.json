@@ -1,6 +1,6 @@
 {
   "name": "su-downloader3",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "HTTP segmented file downloader",
   "keywords": [
     "http",
