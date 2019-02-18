@@ -113,8 +113,10 @@ const SuDScheduler = class {
 	killDownload(key) {
 		var taskQueueItem = this.#getTaskQueueItem(key)
 		var { status } = taskQueueItem
-
-		if(status == 'active') {
+		
+		var dlSubscription = this.#downloadSubscriptions[key]
+		
+		if(dlSubscription) {
 			this.#downloadSubscriptions[key].unsubscribe()
 			delete this.#downloadSubscriptions[key]
 		}
