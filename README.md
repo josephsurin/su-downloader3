@@ -81,21 +81,25 @@ The returned observable emits the meta data of the download on its first emissio
 ```js
 {
 	time: {
-		start //timestamp
-		elapsed //milliseconds
+		start, //timestamp
+		elapsed, //milliseconds
 		eta //seconds
 	},
 	total: {
-		filesize //bytes
-		downloaded //bytes
+		filesize, //bytes
+		downloaded, //bytes
 		percentage //real number between 0 and 100
 	},
-	speed //bytes per second
-	avgSpeed //bytes per second
+	instance: {
+		downloaded, //bytes
+		percentage //real number between 0 and 100
+	},
+	speed, //bytes per second
+	avgSpeed, //bytes per second
 	threadPositions //array of bytes
 }
 ```
-`speed` is calculated by finding the change in `downloaded` with respect to a small change in `elapsed`. Because of this, if the `throttleRate` is particularly low, `speed` will likely fluctuate.
+`speed` is calculated by finding the change in `downloaded` with respect to a small change in `elapsed`. Because of this, if the `throttleRate` is particularly low, `speed` will likely fluctuate. `instance` holds data pertaining to the particular session of the download. For example, if you start a download today and download 120MB/200MB, then resume the download tomorrow, by the time the download is finished, `total.downloaded` will be 200MB, but `instance.downloaded` will be 80MB.
 
 ### SuDScheduler(schedulerOptions) => SuDScheduler
 Instantiates a new SuDScheduler instance with the given options.

@@ -110,6 +110,10 @@ export const getInitialDownloadProgressInfo = meta => {
 			downloaded: 0,
 			percentage: 0
 		},
+		instance: {
+			downloaded: 0,
+			percentage: 0
+		},
 		//bytes per second
 		speed: 0,
 		avgSpeed: 0,
@@ -136,7 +140,7 @@ export function calculateDownloadProgressInfo(prev, threadPosition) {
 	var { meta, initialDownloadProgressInfo, downloadProgressInfo } = prev
 	var prevDownloadProgressInfo = initialDownloadProgressInfo || downloadProgressInfo
 
-	var { time: { start, elapsed },  total: { filesize, downloaded }, threadPositions } = prevDownloadProgressInfo
+	var { time: { start, elapsed },  total: { filesize, downloaded }, instance, threadPositions } = prevDownloadProgressInfo
 	var { ranges } = meta
 
 	//initialise downloaded if necessary
@@ -150,13 +154,15 @@ export function calculateDownloadProgressInfo(prev, threadPosition) {
 
 	var deltaDownloaded = threadPosition - threadPositions[threadIndex]
 	var newDownloaded = downloaded + deltaDownloaded
+	var newInstanceDownloaded = instance.downloaded + deltaDownloaded
 	var newPercentage = 100 * newDownloaded / filesize
+	var newInstancePercentage = 100 * newInstanceDownloaded / filesize
 
 	var newSpeed = 1000 * (deltaDownloaded / deltaTime)
 
 	threadPositions[threadIndex] = threadPosition
 
-	var avgSpeed = 1000 * newDownloaded / newElapsed
+	var avgSpeed = 1000 * newInstanceDownloaded / newElapsed
 	var newEta = (filesize - newDownloaded) / avgSpeed
 
 	var newDownloadProgressInfo = {
@@ -169,6 +175,10 @@ export function calculateDownloadProgressInfo(prev, threadPosition) {
 			filesize,
 			downloaded: newDownloaded,
 			percentage: newPercentage
+		},
+		instance: {
+			downloaded: newInstanceDownloaded,
+			percentage: newInstancePercentage
 		},
 		speed: newSpeed,
 		avgSpeed,
