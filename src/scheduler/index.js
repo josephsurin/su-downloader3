@@ -75,8 +75,11 @@ const SuDScheduler = class {
 	//starts a download task, or resumes an active download
 	//starting a new download task using this methods will ignore
 	//the max concurrent download limit
+	//returns false if a download task with the provided key doesn't exist
+	//returns true otherwise
 	startDownload(key) {
 		var taskQueueItem = this.#getTaskQueueItem(key)
+		if(!taskQueueItem) return false
 		var { userObserver, params: { locations, options } } = taskQueueItem
 		
 		taskQueueItem.status = 'active'
@@ -93,25 +96,30 @@ const SuDScheduler = class {
 	//an active download that is paused is still considered active
 	//stopping a download task allows for more tasks to be auto started
 	//as a stopped task is not considered active
-	//returns false if the download task is already paused/stopped or has not yet started
+	//returns false if the download task is already paused/stopped or has not yet started or does not exist
+	//returns true otherwise
 	pauseDownload(key, stop = false) {
 		var taskQueueItem = this.#getTaskQueueItem(key)
 		var dlSubscription = this.#downloadSubscriptions[key]
+		if(!dlSubscription || !taskQueueItem) return false
 		
 		taskQueueItem.status = stop ? 'stopped' : taskQueueItem.status
-		
-		if(!dlSubscription) return false
 
 		dlSubscription.unsubscribe()
 		delete this.#downloadSubscriptions[key]
 
 		this.#tryNextInQueue()
+
+		return true
 	}
 
 	//stops an active download and removes associated .sud and .PARTIAL files, or
 	//removes queued download task from queue
+	//returns false if a download task with the provided key doesn't exist
+	//returns true otherwise
 	killDownload(key) {
 		var taskQueueItem = this.#getTaskQueueItem(key)
+		if(!taskQueueItem) return false
 		var { status } = taskQueueItem
 		
 		var dlSubscription = this.#downloadSubscriptions[key]
@@ -125,6 +133,8 @@ const SuDScheduler = class {
 		killFiles(key)
 
 		this.#tryNextInQueue()
+		
+		return true
 	}
 
 	//starts downloading as many as possible, limited by the maxConcurrentDownloads option

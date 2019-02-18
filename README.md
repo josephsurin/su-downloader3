@@ -122,15 +122,18 @@ Adds a new download task to the end of the queue.
 If the scheduler has `autoStart` set to true, `true` will be returned if a download task is successfully queued.
 If the scheduler has `autoStart` set to false, a convenience object containing a `start` method will be returned so that the user may simply dot chain `start()` or easily start the download whenever they need.
 
-### SuDScheduler.startDownload(key) => true
+### SuDScheduler.startDownload(key) => boolean
 Starts a new download, or resumes an active download. Starting a new download task using this method ignores the `maxConcurrentDownloads` limit.
+Returns false if a download task with the provided key doesn't exist, or true otherwise.
 
 | Param | Type | Default | Description |
 | --- | :---: | :---: | --- |
 | key | `string` | | Unique identifier for an existing download task.
 
-### SuDScheduler.pauseDownload(key, stop) => false or undefined
+### SuDScheduler.pauseDownload(key, stop) => boolean
 Pauses or stops a download task.
+Returns false if a download task with the provided key doesn't exist, or if the download task is not currently downloading.
+Returns true otherwise.
 
 | Param | Type | Default | Description |
 | --- | :---: | :---: | --- |
@@ -140,10 +143,10 @@ Pauses or stops a download task.
 A paused download is considered active.
 Thus, if the download is paused, i.e. `stop` is `false`, then new downloads will not be automatically started if the max concurrency limit is already reached.
 If the download is stopped, i.e. `stop` is `true`, then the next queued download will start (given that `autoStart` is set to true).
-`false` is returned if the provided key does not match any download tasks, or if the download is not currently downloading.
 
-### SuDScheduler.killDownload(key) => undefined
+### SuDScheduler.killDownload(key) => boolean
 Stops a download (if active) and removes associated `.sud` and `.PARTIAL` files, OR, removes a queued download task from queue.
+Returns false if a download task with the provided key doesn't exist, or true otherwise.
 
 | Param | Type | Default | Description |
 | --- | :---: | :---: | --- |
