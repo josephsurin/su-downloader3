@@ -160,6 +160,13 @@ const SuDScheduler = class {
 		this.#taskQueue.forEach(taskQueueItem => this.pauseDownload(taskQueueItem.key, stop))
 	}
 
+	//returns the status of the download task associated with the provided key or false if the download task doesn't exist
+	getStatus(key) {
+		var taskQueueItem = this.#getTaskQueueItem(key)
+		if(!taskQueueItem) return false
+		return taskQueueItem.status
+	}
+
 	//PRIVATE METHODS
 	#countStatus(status) {
 		return this.#taskQueue.filter(taskQueueItem => taskQueueItem.status == status).length

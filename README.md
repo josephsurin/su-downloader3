@@ -168,6 +168,13 @@ Pauses or stops all download tasks.
 | --- | :---: | :---: | --- |
 | stop | `boolean` | `false` | Whether to stop or just pause the download |
 
+### SuDScheduler.getStatus(key) => TaskQueueItem (object) or false
+Returns the status of a download, or false if the download task with the provided key doesn't exist.
+
+| Param | Type | Default | Description |
+| --- | :---: | :---: | --- |
+| key | `string` | | Unique identifier for a download task |
+
 ### Read only properties
 
 #### SuDScheduler.taskQueue => array
