@@ -26,10 +26,10 @@
   "author": "Joseph Surin <joseph.surin@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/fumetsuu/su-downloader3.git"
+    "url": "https://github.com/josephsurin/su-downloader3.git"
   },
   "bugs": {
-    "url": "https://github.com/fumetsuu/su-downloader3/issues"
+    "url": "https://github.com/josephsurin/su-downloader3/issues"
   },
   "license": "MIT",
   "devDependencies": {
