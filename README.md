@@ -2,7 +2,7 @@
 
 [![npmjs](https://nodei.co/npm/su-downloader3.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/su-downloader3)
 
-[![travis.ci](https://img.shields.io/travis/fumetsuu/su-downloader3/master.svg?style=flat-square)](https://travis-ci.org/fumetsuu/su-downloader3)
+[![travis.ci](https://img.shields.io/travis/josephsurin/su-downloader3/master.svg?style=flat-square)](https://travis-ci.org/fumetsuu/su-downloader3)
 ![npmjs download count](https://img.shields.io/npm/dt/su-downloader3.svg)
 
 ## Table of Contents
