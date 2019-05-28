@@ -10,7 +10,7 @@ const observer = require('./observer')(true)
 const observerSched = require('./observer')(false)
 
 program
-	.version('1.1.0')
+	.version('1.1.1')
 
 program
 	.command('start <url>')
