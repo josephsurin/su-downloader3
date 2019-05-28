@@ -4,11 +4,12 @@ var program = require('commander')
 
 const path = require('path')
 const fs = require('graceful-fs')
-const { startDownload } = require('../build/downloader')
+const { startDownload, sudPath } = require('../build/downloader')
+const SuDScheduler = require('../build/scheduler')
 const observer = require('./observer')()
 
 program
-	.version('1.0.0')
+	.version('1.1.0')
 
 program
 	.command('start <url>')
@@ -61,5 +62,45 @@ program
 		startDownload(sud_path, options).subscribe(observer)
 	})
 
-
+program
+	.command('batch <in_file>')
+	.description('starts/resumes downloads from a txt file containing filename url lines')
+	.option('-H, --headers [headers]', 'HTTP request headers')
+	.option('-r, --throttleRate [throttleRate]', 'throttle time between progress info')
+	.option('-c, --concurrent [concurrent]', 'the max number of concurrent downloads')
+	.action((in_file, options) => {
+		if(!in_file) {
+			console.error('an input text file is required, type sud3 batch --help for help')
+			process.exit(1)
+		}
+		if(!fs.existsSync(in_file)) {
+			console.error('the provided in file is invalid, type sud3 batch --help for help')
+			process.exit(1)
+		}
+		var downloadOptions = {}
+		var maxConcurrentDownloads = 4
+		if(options.headers) downloadOptions.headers = JSON.parse(options.headers)
+		if(options.throttleRate) downloadOptions.throttleRate = parseInt(options.throttleRate)
+		if(options.concurrent) maxConcurrentDownloads = parseInt(options.concurrent)
+		var filename_urls = fs.readFileSync(in_file).toString().split('\n').map(furl => {
+			if(furl.split('" ').length == 1) {
+				return furl.split(' ')
+			} else {
+				return furl.split('" ')
+			}
+		})
+		var suDScheduler = new SuDScheduler({ maxConcurrentDownloads, downloadOptions })
+		filename_urls.forEach(dlItem => {
+			if(dlItem.length == 2) {
+				var [savePath, url] = dlItem
+				var locations = null
+				if(fs.existsSync(sudPath(savePath))) {
+					locations = sudPath(savePath)
+				} else {
+					locations = { url, savePath }
+				}
+				suDScheduler.queueDownload(savePath, locations, observer)
+			}
+		})
+	})
 program.parse(process.argv)
