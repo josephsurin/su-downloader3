@@ -2,7 +2,7 @@ const path = require('path')
 const bytes = require('bytes')
 require('draftlog').into(console).addLineListener(process.stdin)
 
-const observer = () => {
+const observer = (exitOnFinish) => {
 	var sp = ''
 	var draft = null
 	return {
@@ -17,7 +17,9 @@ const observer = () => {
 		error: console.log,
 		complete: () => {
 			draft('FINISHED DOWNLOADING FILE SAVED TO \n', sp)
-			process.exit(0)
+			if(exitOnFinish) {
+				process.exit(0)
+			}
 		}
 	}
 }

@@ -224,7 +224,7 @@ const SuDScheduler = class {
 				//remove the useless dead subscription and internal reference
 				this.#removeTaskQueueItem(key)
 				delete this.#downloadSubscriptions[key]
-
+				//emit event for empty queue
 				this.#tryNextInQueue()
 			}
 		}

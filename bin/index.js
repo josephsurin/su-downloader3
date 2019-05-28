@@ -6,7 +6,8 @@ const path = require('path')
 const fs = require('graceful-fs')
 const { startDownload, sudPath } = require('../build/downloader')
 const SuDScheduler = require('../build/scheduler')
-const observer = require('./observer')()
+const observer = require('./observer')(true)
+const observerSched = require('./observer')(false)
 
 program
 	.version('1.1.0')
@@ -78,7 +79,7 @@ program
 			process.exit(1)
 		}
 		var downloadOptions = {}
-		var maxConcurrentDownloads = 4
+		var maxConcurrentDownloads = 1
 		if(options.headers) downloadOptions.headers = JSON.parse(options.headers)
 		if(options.throttleRate) downloadOptions.throttleRate = parseInt(options.throttleRate)
 		if(options.concurrent) maxConcurrentDownloads = parseInt(options.concurrent)
@@ -99,7 +100,7 @@ program
 				} else {
 					locations = { url, savePath }
 				}
-				suDScheduler.queueDownload(savePath, locations, observer)
+				suDScheduler.queueDownload(savePath, locations, observerSched)
 			}
 		})
 	})
