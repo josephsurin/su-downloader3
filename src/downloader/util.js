@@ -58,6 +58,7 @@ export function getRangeHeaders(savePath, ranges) {
 export const fsReadFile = bindNodeCallback(fs.readFile)
 const fsAppendFile = bindNodeCallback(fs.appendFile)
 const fsUnlink = bindNodeCallback(fs.unlink)
+const fsRename = bindNodeCallback(fs.rename)
 
 //concatenates all .PARTIAL files and renames the resulting file
 //cleans up by deleting .PARTIAL files and .sud meta data file
@@ -83,11 +84,15 @@ export function rebuildFiles(meta) {
 		//the save file and deletes it
 		//concatMap ensures this is done in order
 		concatMap(partialFile => 
-			of(partialFile).pipe(
-				concatMap(partialFile => fsReadFile(partialFile)),
-				concatMap(partialData => fsAppendFile(savePath, partialData)),
-				concatMap(() => fsUnlink(partialFile))
-			)
+			ranges.length > 1 ?
+				of(partialFile).pipe(
+					concatMap(partialFile => fsReadFile(partialFile)),
+					concatMap(partialData => fsAppendFile(savePath, partialData)),
+					concatMap(() => fsUnlink(partialFile))
+				) :
+				of(partialFile).pipe(
+					concatMap(partialData => fsRename(partialData, savePath))
+				)
 		),
 		concat(fsUnlink(sudFile)),
 		//we don't care about the output, we just wanted to perform the actions
